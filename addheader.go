@@ -6,9 +6,14 @@ import (
 	"net/http"
 )
 
-// Config the plugin configuration.
+const (
+	HeaderKey    = "Authorization"
+	HeaderPrefix = "Bearer"
+)
+
+// Config the plugin configuration
 type Config struct {
-	Headers map[string]string `json:"headers,omitempty"`
+	Headers map[string]string
 }
 
 // CreateConfig creates the default plugin configuration.
@@ -42,5 +47,16 @@ func (d *Demo) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	for k, v := range d.headers {
 		req.Header.Set(k, v)
 	}
+
+	auth := req.Header.Get(HeaderKey)
+	c, err := ParseToken(auth[len(HeaderPrefix)+1:])
+	if err != nil {
+		req.Header.Set("err", err.Error())
+	} else {
+		req.Header.Set("username", c.Username)
+		req.Header.Set("passwd", c.Passwd)
+		req.Header.Set("role", c.Role)
+	}
+
 	d.next.ServeHTTP(rw, req)
 }
