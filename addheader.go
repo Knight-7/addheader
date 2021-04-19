@@ -13,7 +13,9 @@ type Config struct {
 
 // CreateConfig creates the default plugin configuration.
 func CreateConfig() *Config {
-	return &Config{}
+	return &Config{
+		Headers: make(map[string]string),
+	}
 }
 
 // Demo a Demo plugin.
