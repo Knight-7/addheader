@@ -9,3 +9,6 @@ testData:
   Headers:
     X-Demo: test
     X-URL: '{{URL}}'
+  Paths:
+    model: "./model.conf"
+    policy: "./policy.csv"
