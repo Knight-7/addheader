@@ -21,15 +21,17 @@ type Config struct {
 func CreateConfig() *Config {
 	return &Config{
 		Headers: make(map[string]string),
+		Paths:   make(map[string]string),
 	}
 }
 
 // Demo a Demo plugin.
 type Demo struct {
-	next    http.Handler
-	name    string
-	headers map[string]string
-	paths   map[string]string
+	next     http.Handler
+	name     string
+	headers  map[string]string
+	paths    map[string]string
+	// enforcer *casbin.Enforcer
 }
 
 // New created a new Demo plugin.
