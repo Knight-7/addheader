@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+
+	"github.com/casbin/casbin/v2"
 )
 
 const (
@@ -26,8 +28,9 @@ func CreateConfig() *Config {
 // Demo a Demo plugin.
 type Demo struct {
 	next     http.Handler
-	headers  map[string]string
 	name     string
+	enforcer *casbin.Enforcer
+	headers  map[string]string
 }
 
 // New created a new Demo plugin.
@@ -36,8 +39,14 @@ func New(ctx context.Context, next http.Handler, config *Config, name string) (h
 		return nil, fmt.Errorf("headers cannot be empty")
 	}
 
+	enforcer, err := casbin.NewEnforcer("./model.conf", "./policy.csv")
+	if err != nil {
+		return nil, err
+	}
+
 	return &Demo{
 		headers:  config.Headers,
+		enforcer: enforcer,
 		next:     next,
 		name:     name,
 	}, nil
@@ -48,14 +57,15 @@ func (d *Demo) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		req.Header.Set(k, v)
 	}
 
-	auth := req.Header.Get(HeaderKey)
-	c, err := ParseToken(auth[len(HeaderPrefix)+1:])
+	ok, err := d.enforcer.Enforce("bob", "/dataset2/resource2", "GET")
 	if err != nil {
-		req.Header.Set("err", err.Error())
-	} else {
-		req.Header.Set("username", c.Username)
-		req.Header.Set("passwd", c.Passwd)
-		req.Header.Set("role", c.Role)
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if !ok {
+		rw.WriteHeader(http.StatusUnauthorized)
+		return
 	}
 
 	d.next.ServeHTTP(rw, req)
