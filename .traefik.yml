@@ -1,0 +1,11 @@
+displayName: Add header
+type: middleware
+
+import: github.com/Knight-7/addheader
+
+summary: '[Demo] Add Request Header'
+
+testData:
+  Headers:
+    X-Demo: test
+    X-URL: '{{URL}}'
