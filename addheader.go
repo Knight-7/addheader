@@ -1,4 +1,4 @@
-package add_header
+package addheader
 
 import (
 	"context"
